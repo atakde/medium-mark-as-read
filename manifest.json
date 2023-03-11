@@ -5,7 +5,8 @@
   "content_scripts": [
     {
       "matches": [
-        "https://medium.com/*"
+        "https://medium.com/*",
+        "https://*.medium.com/*"
       ],
       "js": [
         "main.js"
