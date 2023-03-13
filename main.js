@@ -41,56 +41,48 @@ console.log('Hello from main.js!');
     let removedFromReadingList = false;
 
     // Add a click event listener to the button
-    markAsReadButton.addEventListener('click', () => {
+    markAsReadButton.addEventListener('click', async () => {
       console.log('Mark as Read button clicked');
-
       document.querySelectorAll('[aria-controls="addToCatalogBookmarkButton"]')[0].click();
+      // Wait for the target element to appear in the DOM
+      await new Promise(resolve => {
+        const documentObserver = new MutationObserver(() => {
+          // p tag with text "Read Story"
+          const pTags = document.querySelectorAll('p');
+          pTags.forEach(pTag => {
+            if (pTag.innerText.includes("Read Story")) {
+              const parentDiv = pTag.parentElement.parentElement;
+              const isChecked = parentDiv.querySelector('input').checked;
 
-      const addReadingListInterval = setInterval(() => {
-        const pTags = document.querySelectorAll('p');
-        pTags.forEach(pTag => {
-          if (pTag.innerText.includes("Read Story")) {
-            const parentDiv = pTag.parentElement.parentElement;
-            const isChecked = parentDiv.querySelector('input').checked;
+              if (!isChecked) {
+                pTag.click();
+              }
 
-            if (!isChecked) {
-              pTag.click();
+              isMarkedAsRead = true;
             }
 
-            isMarkedAsRead = true;
+            if (pTag.innerText.includes("Reading list")) {
+              const parentDiv = pTag.parentElement.parentElement;
+              const isChecked = parentDiv.querySelector('input').checked;
 
-            clearInterval(addReadingListInterval);
-          }
-        });
-      }, 1000);
+              if (isChecked) {
+                pTag.click();
+              }
 
-      const removeReadingListInterval = setInterval(() => {
-        const pTags = document.querySelectorAll('p');
-        pTags.forEach(pTag => {
-          if (pTag.innerText.includes("Reading list")) {
-            const parentDiv = pTag.parentElement.parentElement;
-            const isChecked = parentDiv.querySelector('input').checked;
-
-            if (isChecked) {
-              pTag.click();
+              removedFromReadingList = true;
             }
 
-            removedFromReadingList = true;
-
-            clearInterval(removeReadingListInterval);
+            if (isMarkedAsRead && removedFromReadingList) {
+              resolve();
+              documentObserver.disconnect();
+              markAsReadButton.remove();
+              document.querySelectorAll('[aria-controls="addToCatalogBookmarkButton"]')[0].click();
+            }
           }
+          );
         });
-      }, 1000);
-
-      const removeInterval = setInterval(() => {
-        console.log(isMarkedAsRead, removedFromReadingList);
-        if (isMarkedAsRead && removedFromReadingList) {
-          markAsReadButton.remove();
-          document.querySelectorAll('[aria-controls="addToCatalogBookmarkButton"]')[0].click();
-          clearInterval(removeInterval);
-        }
-      }, 1000);
-
+        documentObserver.observe(document, { childList: true, subtree: true });
+      });
     });
 
     // Inject the button into the page

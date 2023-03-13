@@ -5,13 +5,12 @@
   "permissions": [
     "webNavigation",
     "scripting",
-    "tabs",
-    "*://*.medium.com/*"
+    "tabs"
   ],
   "content_scripts": [
     {
       "matches": [
-        "https://medium.com/*",
+        "https://medium.com/@*/*",
         "https://*.medium.com/*"
       ],
       "js": [
